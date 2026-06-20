@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 
@@ -176,22 +177,24 @@ def trash_file(path: Path, *, dry_run: bool) -> None:
     print(f"Trash original: {path}")
     if dry_run:
         return
-    subprocess.run(
-        [
-            "osascript",
-            "-e",
-            "on run argv",
-            "-e",
-            "set sourceFile to POSIX file (item 1 of argv) as alias",
-            "-e",
-            'tell application "Finder" to delete sourceFile',
-            "-e",
-            "end run",
-            str(path),
-        ],
-        check=True,
-        stdout=subprocess.DEVNULL,
-    )
+    trash_dir = Path.home() / ".Trash"
+    trash_dir.mkdir(exist_ok=True)
+    shutil.move(str(path), unique_trash_path(trash_dir, path).as_posix())
+
+
+def unique_trash_path(trash_dir: Path, source: Path) -> Path:
+    candidate = trash_dir / source.name
+    if not candidate.exists():
+        return candidate
+
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    stem = source.stem
+    suffix = source.suffix
+    for index in range(1, 10_000):
+        candidate = trash_dir / f"{stem} {timestamp}-{index}{suffix}"
+        if not candidate.exists():
+            return candidate
+    raise RuntimeError(f"Could not create unique Trash path for: {source}")
 
 
 def main() -> int:

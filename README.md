@@ -80,6 +80,8 @@ The installer builds the droplet locally on each Mac with `osacompile`, so there
 
 Automator runs with a minimal shell environment, so it may not inherit Homebrew's `PATH`. The converter handles this by checking common ffmpeg locations like `/opt/homebrew/bin/ffmpeg` and `/usr/local/bin/ffmpeg`.
 
+Originals are moved directly into the user's `~/.Trash` folder after successful conversion. The converter does not ask Finder to delete files, which avoids macOS Automation permission prompts.
+
 ## App Icon
 
 The app icon source is `assets/app-icon.svg`. To rebuild the macOS `.icns` file:
