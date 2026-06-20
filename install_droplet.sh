@@ -8,6 +8,8 @@ INSTALL_SCRIPT="$INSTALL_BIN_DIR/mp3-convert"
 INSTALL_APP="$INSTALL_APP_DIR/$APP_NAME.app"
 SOURCE_DIR="${0:A:h}"
 SOURCE_SCRIPT="$SOURCE_DIR/convert_audio_to_mp3.py"
+SOURCE_ICON="$SOURCE_DIR/assets/app-icon.icns"
+BUILD_ICON_SCRIPT="$SOURCE_DIR/build_icon.sh"
 
 if [[ ! -f "$SOURCE_SCRIPT" ]]; then
   echo "Could not find converter script: $SOURCE_SCRIPT" >&2
@@ -30,6 +32,10 @@ fi
 mkdir -p "$INSTALL_BIN_DIR" "$INSTALL_APP_DIR"
 cp "$SOURCE_SCRIPT" "$INSTALL_SCRIPT"
 chmod +x "$INSTALL_SCRIPT"
+
+if [[ ! -f "$SOURCE_ICON" && -x "$BUILD_ICON_SCRIPT" ]]; then
+  "$BUILD_ICON_SCRIPT"
+fi
 
 rm -rf "$INSTALL_APP"
 
@@ -64,6 +70,11 @@ on run
   display dialog \"Drop audio files or folders onto this app to convert them to MP3.\" buttons {\"OK\"} default button \"OK\"
 end run
 "
+
+if [[ -f "$SOURCE_ICON" ]]; then
+  cp "$SOURCE_ICON" "$INSTALL_APP/Contents/Resources/droplet.icns"
+  touch "$INSTALL_APP"
+fi
 
 echo "Installed CLI: $INSTALL_SCRIPT"
 echo "Installed droplet: $INSTALL_APP"

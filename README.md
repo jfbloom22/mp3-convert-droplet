@@ -80,6 +80,16 @@ The installer builds the droplet locally on each Mac with `osacompile`, so there
 
 Automator runs with a minimal shell environment, so it may not inherit Homebrew's `PATH`. The converter handles this by checking common ffmpeg locations like `/opt/homebrew/bin/ffmpeg` and `/usr/local/bin/ffmpeg`.
 
+## App Icon
+
+The app icon source is `assets/app-icon.svg`. To rebuild the macOS `.icns` file:
+
+```sh
+./build_icon.sh
+```
+
+`install_droplet.sh` applies `assets/app-icon.icns` to the generated droplet.
+
 ## Conversion Defaults
 
 - Inputs: `.aac`, `.aif`, `.aiff`, `.alac`, `.flac`, `.m4a`, `.m4b`, `.ogg`, `.opus`, `.wav`, `.wma`

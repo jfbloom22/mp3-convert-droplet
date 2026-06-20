@@ -2,3 +2,4 @@
 __pycache__/
 *.py[cod]
 sample/**/*.mp3
+assets/app-icon.iconset/
