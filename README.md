@@ -23,6 +23,11 @@ This creates:
 
 Drag `~/Applications/Convert Audio to MP3.app` to the Dock. Drop audio files or folders onto it to convert recursively. In droplet mode, originals are moved to the macOS Trash after successful conversion.
 
+Each drop prompts for a conversion preset:
+
+- `Music`: highest quality MP3 using LAME VBR `-q:a 0`
+- `Audiobook`: smaller MP3 using `128k`, while preserving stereo for voice acting and sound effects
+
 To uninstall:
 
 ```sh
@@ -54,18 +59,24 @@ Replace existing MP3 outputs during repeated tests:
 After a successful conversion, move the original non-MP3 audio file to the macOS Trash:
 
 ```sh
-./convert_audio_to_mp3.py --trash-originals /path/to/folder
+./convert_audio_to_mp3.py --trash-originals --preset music /path/to/folder
+```
+
+Use the audiobook preset for spoken-word material where smaller files are preferred:
+
+```sh
+./convert_audio_to_mp3.py --trash-originals --preset audiobook /path/to/folder
 ```
 
 Use `--overwrite` too if existing `.mp3` files should be replaced:
 
 ```sh
-./convert_audio_to_mp3.py --trash-originals --overwrite /path/to/folder
+./convert_audio_to_mp3.py --trash-originals --overwrite --preset music /path/to/folder
 ```
 
 ## Drag-and-Drop Dock App
 
-The installer builds the droplet locally on each Mac with `osacompile`, so there is no downloaded unsigned app bundle to distribute. The app calls `~/.local/bin/mp3-convert --trash-originals` for dropped files and folders.
+The installer builds the droplet locally on each Mac with `osacompile`, so there is no downloaded unsigned app bundle to distribute. The app prompts for Music or Audiobook, then calls `~/.local/bin/mp3-convert --trash-originals --preset ...` for dropped files and folders.
 
 Automator runs with a minimal shell environment, so it may not inherit Homebrew's `PATH`. The converter handles this by checking common ffmpeg locations like `/opt/homebrew/bin/ffmpeg` and `/usr/local/bin/ffmpeg`.
 
@@ -73,6 +84,7 @@ Automator runs with a minimal shell environment, so it may not inherit Homebrew'
 
 - Inputs: `.aac`, `.aif`, `.aiff`, `.alac`, `.flac`, `.m4a`, `.m4b`, `.ogg`, `.opus`, `.wav`, `.wma`
 - Skips existing `.mp3` outputs unless `--overwrite` is passed.
-- Uses `libmp3lame` VBR quality `-q:a 2`.
+- Music preset uses `libmp3lame` VBR quality `-q:a 0`.
+- Audiobook preset uses `libmp3lame` bitrate `-b:a 128k`.
 - Preserves source metadata with `-map_metadata 0`.
 - Writes through a temporary file before replacing the final `.mp3`.

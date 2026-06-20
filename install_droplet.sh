@@ -35,13 +35,23 @@ rm -rf "$INSTALL_APP"
 
 osacompile -o "$INSTALL_APP" -e "
 on open droppedItems
+  set presetOptions to {\"Music - highest quality\", \"Audiobook - voice acting and sound effects\"}
+  set presetChoice to choose from list presetOptions with title \"$APP_NAME\" with prompt \"Choose MP3 quality for this batch:\" default items {\"Music - highest quality\"} OK button name \"Convert\" cancel button name \"Cancel\"
+  if presetChoice is false then return
+
+  if item 1 of presetChoice is \"Audiobook - voice acting and sound effects\" then
+    set presetName to \"audiobook\"
+  else
+    set presetName to \"music\"
+  end if
+
   set quotedPaths to \"\"
   repeat with droppedItem in droppedItems
     set posixPath to POSIX path of droppedItem
     set quotedPaths to quotedPaths & \" \" & quoted form of posixPath
   end repeat
 
-  set commandText to quoted form of \"$INSTALL_SCRIPT\" & \" --trash-originals\" & quotedPaths
+  set commandText to quoted form of \"$INSTALL_SCRIPT\" & \" --trash-originals --preset \" & presetName & quotedPaths
   try
     do shell script commandText
     display notification \"Audio conversion finished.\" with title \"$APP_NAME\"

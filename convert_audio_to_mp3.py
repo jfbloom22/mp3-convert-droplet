@@ -59,9 +59,15 @@ def parse_args() -> argparse.Namespace:
         help="Print planned work without converting or moving files.",
     )
     parser.add_argument(
+        "--preset",
+        choices=("music", "audiobook"),
+        default="music",
+        help="Encoding preset. music uses high-quality VBR; audiobook uses smaller 128k MP3 while preserving channels.",
+    )
+    parser.add_argument(
         "--quality",
-        default="2",
-        help="libmp3lame VBR quality, 0-9. Lower is better. Default: 2.",
+        default=None,
+        help="Override music preset libmp3lame VBR quality, 0-9. Lower is better.",
     )
     return parser.parse_args()
 
@@ -105,7 +111,8 @@ def convert_to_mp3(
     *,
     ffmpeg: str,
     overwrite: bool,
-    quality: str,
+    preset: str,
+    quality: str | None,
     dry_run: bool,
 ) -> bool:
     target = source.with_suffix(".mp3")
@@ -126,6 +133,8 @@ def convert_to_mp3(
     os.close(fd)
     tmp_path = Path(tmp_name)
 
+    encoder_args = build_encoder_args(preset=preset, quality=quality)
+
     try:
         subprocess.run(
             [
@@ -137,10 +146,7 @@ def convert_to_mp3(
                 "-i",
                 str(source),
                 "-vn",
-                "-c:a",
-                "libmp3lame",
-                "-q:a",
-                quality,
+                *encoder_args,
                 "-map_metadata",
                 "0",
                 "-id3v2_version",
@@ -156,6 +162,14 @@ def convert_to_mp3(
     except Exception:
         tmp_path.unlink(missing_ok=True)
         raise
+
+
+def build_encoder_args(*, preset: str, quality: str | None) -> list[str]:
+    if preset == "music":
+        return ["-c:a", "libmp3lame", "-q:a", quality or "0"]
+    if preset == "audiobook":
+        return ["-c:a", "libmp3lame", "-b:a", "128k"]
+    raise ValueError(f"Unknown preset: {preset}")
 
 
 def trash_file(path: Path, *, dry_run: bool) -> None:
@@ -197,6 +211,7 @@ def main() -> int:
                 source,
                 ffmpeg=ffmpeg,
                 overwrite=args.overwrite,
+                preset=args.preset,
                 quality=args.quality,
                 dry_run=args.dry_run,
             )
