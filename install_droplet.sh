@@ -39,37 +39,45 @@ fi
 
 rm -rf "$INSTALL_APP"
 
-osacompile -o "$INSTALL_APP" -e "
+applescript_source="$(mktemp)"
+trap 'rm -f "$applescript_source"' EXIT
+
+cat > "$applescript_source" <<APPLESCRIPT
+property converterPath : "$INSTALL_SCRIPT"
+property appTitle : "$APP_NAME"
+
 on open droppedItems
-  set presetOptions to {\"Music - highest quality\", \"Audiobook - voice acting and sound effects\"}
-  set presetChoice to choose from list presetOptions with title \"$APP_NAME\" with prompt \"Choose MP3 quality for this batch:\" default items {\"Music - highest quality\"} OK button name \"Convert\" cancel button name \"Cancel\"
+  set presetOptions to {"Music - highest quality", "Audiobook - voice acting and sound effects"}
+  set presetChoice to choose from list presetOptions with title appTitle with prompt "Choose MP3 quality for this batch:" default items {"Music - highest quality"} OK button name "Convert" cancel button name "Cancel"
   if presetChoice is false then return
 
-  if item 1 of presetChoice is \"Audiobook - voice acting and sound effects\" then
-    set presetName to \"audiobook\"
+  if item 1 of presetChoice is "Audiobook - voice acting and sound effects" then
+    set presetName to "audiobook"
   else
-    set presetName to \"music\"
+    set presetName to "music"
   end if
 
-  set quotedPaths to \"\"
+  set quotedPaths to ""
   repeat with droppedItem in droppedItems
     set posixPath to POSIX path of droppedItem
-    set quotedPaths to quotedPaths & \" \" & quoted form of posixPath
+    set quotedPaths to quotedPaths & " " & quoted form of posixPath
   end repeat
 
-  set commandText to quoted form of \"$INSTALL_SCRIPT\" & \" --trash-originals --preset \" & presetName & quotedPaths
+  set commandText to quoted form of converterPath & " --trash-originals --preset " & presetName & quotedPaths
   try
     do shell script commandText
-    display notification \"Audio conversion finished.\" with title \"$APP_NAME\"
+    display notification "Audio conversion finished." with title appTitle
   on error errorMessage number errorNumber
-    display dialog \"Audio conversion failed:\" & return & return & errorMessage buttons {\"OK\"} default button \"OK\" with icon stop
+    display dialog "Audio conversion failed:" & return & return & errorMessage buttons {"OK"} default button "OK" with icon stop
   end try
 end open
 
 on run
-  display dialog \"Drop audio files or folders onto this app to convert them to MP3.\" buttons {\"OK\"} default button \"OK\"
+  display dialog "Drop audio files or folders onto this app to convert them to MP3." buttons {"OK"} default button "OK"
 end run
-"
+APPLESCRIPT
+
+osacompile -o "$INSTALL_APP" "$applescript_source"
 
 if [[ -f "$SOURCE_ICON" ]]; then
   cp "$SOURCE_ICON" "$INSTALL_APP/Contents/Resources/app-icon.icns"

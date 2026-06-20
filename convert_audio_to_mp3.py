@@ -9,7 +9,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from datetime import datetime
 from pathlib import Path
 
 
@@ -32,6 +31,16 @@ COMMON_FFMPEG_PATHS = (
     "/usr/local/bin/ffmpeg",
     "/usr/bin/ffmpeg",
 )
+
+
+def mp3_quality(value: str) -> str:
+    try:
+        quality = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("quality must be an integer from 0 to 9") from error
+    if quality < 0 or quality > 9:
+        raise argparse.ArgumentTypeError("quality must be an integer from 0 to 9")
+    return str(quality)
 
 
 def parse_args() -> argparse.Namespace:
@@ -68,6 +77,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--quality",
         default=None,
+        type=mp3_quality,
         help="Override music preset libmp3lame VBR quality, 0-9. Lower is better.",
     )
     return parser.parse_args()
@@ -177,24 +187,30 @@ def trash_file(path: Path, *, dry_run: bool) -> None:
     print(f"Trash original: {path}")
     if dry_run:
         return
-    trash_dir = Path.home() / ".Trash"
-    trash_dir.mkdir(exist_ok=True)
-    shutil.move(str(path), unique_trash_path(trash_dir, path).as_posix())
-
-
-def unique_trash_path(trash_dir: Path, source: Path) -> Path:
-    candidate = trash_dir / source.name
-    if not candidate.exists():
-        return candidate
-
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    stem = source.stem
-    suffix = source.suffix
-    for index in range(1, 10_000):
-        candidate = trash_dir / f"{stem} {timestamp}-{index}{suffix}"
-        if not candidate.exists():
-            return candidate
-    raise RuntimeError(f"Could not create unique Trash path for: {source}")
+    subprocess.run(
+        [
+            "osascript",
+            "-l",
+            "JavaScript",
+            "-e",
+            """
+function run(argv) {
+  ObjC.import("Foundation");
+  const url = $.NSURL.fileURLWithPath(argv[0]);
+  const ok = $.NSFileManager.defaultManager.trashItemAtURLResultingItemURLError(
+    url,
+    null,
+    null
+  );
+  if (!ok) {
+    throw new Error("Could not move item to Trash: " + argv[0]);
+  }
+}
+""",
+            str(path),
+        ],
+        check=True,
+    )
 
 
 def main() -> int:
@@ -207,7 +223,9 @@ def main() -> int:
         return 0
 
     converted = 0
+    skipped = 0
     failed = 0
+    trash_failed = 0
     for source in files:
         try:
             did_convert = convert_to_mp3(
@@ -218,16 +236,27 @@ def main() -> int:
                 quality=args.quality,
                 dry_run=args.dry_run,
             )
-            if did_convert:
-                converted += 1
-                if args.trash_originals:
+            if not did_convert:
+                skipped += 1
+                continue
+            converted += 1
+            if args.trash_originals:
+                try:
                     trash_file(source, dry_run=args.dry_run)
+                except subprocess.CalledProcessError as error:
+                    trash_failed += 1
+                    print(f"Trash failed: {source} ({error})", file=sys.stderr)
         except subprocess.CalledProcessError as error:
             failed += 1
-            print(f"Failed: {source} ({error})", file=sys.stderr)
+            print(f"Conversion failed: {source} ({error})", file=sys.stderr)
 
-    print(f"Done. Converted: {converted}. Failed: {failed}.")
-    return 1 if failed else 0
+    print(
+        f"Done. Converted: {converted}. "
+        f"Skipped: {skipped}. "
+        f"Conversion failed: {failed}. "
+        f"Trash failed: {trash_failed}."
+    )
+    return 1 if failed or trash_failed else 0
 
 
 if __name__ == "__main__":
