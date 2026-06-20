@@ -72,7 +72,9 @@ end run
 "
 
 if [[ -f "$SOURCE_ICON" ]]; then
-  cp "$SOURCE_ICON" "$INSTALL_APP/Contents/Resources/droplet.icns"
+  cp "$SOURCE_ICON" "$INSTALL_APP/Contents/Resources/app-icon.icns"
+  /usr/libexec/PlistBuddy -c "Set :CFBundleIconFile app-icon.icns" "$INSTALL_APP/Contents/Info.plist"
+  /usr/libexec/PlistBuddy -c "Delete :CFBundleIconName" "$INSTALL_APP/Contents/Info.plist" >/dev/null 2>&1 || true
   touch "$INSTALL_APP"
 fi
 
