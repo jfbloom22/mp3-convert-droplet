@@ -2,12 +2,12 @@
 set -euo pipefail
 
 ROOT_DIR="${0:A:h}"
-SVG="$ROOT_DIR/assets/app-icon.svg"
+RENDERER="$ROOT_DIR/scripts/render_app_icon.py"
 ICONSET="$ROOT_DIR/assets/app-icon.iconset"
 ICNS="$ROOT_DIR/assets/app-icon.icns"
 
-if [[ ! -f "$SVG" ]]; then
-  echo "Missing icon source: $SVG" >&2
+if [[ ! -f "$RENDERER" ]]; then
+  echo "Missing icon renderer: $RENDERER" >&2
   exit 1
 fi
 
@@ -17,13 +17,8 @@ mkdir -p "$ICONSET"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
-qlmanage -t -s 1024 -o "$tmpdir" "$SVG" >/dev/null 2>&1
-base_png="$tmpdir/app-icon.svg.png"
-
-if [[ ! -f "$base_png" ]]; then
-  echo "Could not render SVG with qlmanage." >&2
-  exit 1
-fi
+base_png="$tmpdir/app-icon.png"
+"$RENDERER" --size 1024 --out "$base_png"
 
 sips -s format png -z 16 16 "$base_png" --out "$ICONSET/icon_16x16.png" >/dev/null
 sips -s format png -z 32 32 "$base_png" --out "$ICONSET/icon_16x16@2x.png" >/dev/null
