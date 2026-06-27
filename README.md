@@ -37,9 +37,9 @@ cd mp3-convert-droplet
 That creates:
 
 - `~/.local/bin/mp3-convert`
-- `~/Applications/Convert Audio to MP3.app`
+- `~/Applications/Convert Audio to MP3.app` (`Applications` inside your home folder)
 
-Drag `~/Applications/Convert Audio to MP3.app` to the Dock. Dropping a folder onto it will recurse through the tree, convert supported audio files, and move the originals to Trash after success.
+Drag `~/Applications/Convert Audio to MP3.app` to the Dock. That is the `Applications` folder inside your home folder, not the system `/Applications` folder. Dropping a folder onto it will recurse through the tree, convert supported audio files, and move the originals to Trash after success.
 
 To uninstall:
 

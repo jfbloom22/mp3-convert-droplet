@@ -88,4 +88,5 @@ fi
 
 echo "Installed CLI: $INSTALL_SCRIPT"
 echo "Installed droplet: $INSTALL_APP"
+echo "This is in your home folder's Applications directory, not /Applications."
 echo "Drag the app to the Dock, then drop files or folders onto it."
