@@ -4,6 +4,8 @@ I built this because I missed the old feeling of making MP3 CDs. As a teenager, 
 
 What they need is simple. They create a folder for a CD, put nested folders inside it as playlists or album groupings, then drag the whole thing onto this app. It asks whether the batch is Music or Audiobook, converts the supported audio files to MP3, and replaces the originals by moving them to Trash after a successful run. This project was built in a few hours over a weekend with help from AI coding agents.
 
+With AI, more people have the chance to build and solve problems they actually care about. That mindset is part of the work I get to share through [Workplace Labs](https://www.workplacelabs.io/).
+
 ![MP3 Convert Droplet demo](assets/audio%20to%20mp3.gif)
 
 ## What It Does
