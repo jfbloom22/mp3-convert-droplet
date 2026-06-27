@@ -2,7 +2,7 @@
 
 I built this because I missed the old feeling of making MP3 CDs. As a teenager, I loved fitting a handful of favorite albums onto one disc. My sons now use the same style of setup, and when I looked for software to help them make MP3 CDs in 2026, the options were surprisingly poor: subscription apps, Apple Music workarounds, and tools that were not very pleasant to use.
 
-What they need is simple. They create a folder for a CD, put nested folders inside it as playlists or album groupings, then drag the whole thing onto this app. It asks whether the batch is Music or Audiobook, converts the supported audio files to MP3, and leaves them ready for Roxio Toast or whatever they use to burn the disc. This project was built in a few hours over a weekend with help from AI coding agents.
+What they need is simple. They create a folder for a CD, put nested folders inside it as playlists or album groupings, then drag the whole thing onto this app. It asks whether the batch is Music or Audiobook, converts the supported audio files to MP3, and replaces the originals by moving them to Trash after a successful run. This project was built in a few hours over a weekend with help from AI coding agents.
 
 ![MP3 Convert Droplet demo](assets/audio%20to%20mp3.gif)
 
@@ -39,7 +39,7 @@ That creates:
 - `~/.local/bin/mp3-convert`
 - `~/Applications/Convert Audio to MP3.app`
 
-Drag `~/Applications/Convert Audio to MP3.app` to the Dock. Dropping files or folders onto it will recurse through the tree and convert the supported audio files in place.
+Drag `~/Applications/Convert Audio to MP3.app` to the Dock. Dropping a folder onto it will recurse through the tree, convert supported audio files, and move the originals to Trash after success.
 
 To uninstall:
 
@@ -53,7 +53,15 @@ This follows the same droplet idea as [Loomify](https://github.com/jfbloom22/Loo
 
 ## Usage
 
-By default, the script writes `.mp3` files beside the originals and leaves the source files in place:
+The main workflow is drag and drop:
+
+1. Create a folder for a CD.
+1. Put nested folders inside it as playlists or albums.
+1. Drag the top-level folder onto `Convert Audio to MP3.app`.
+1. Choose `Music` or `Audiobook`.
+1. Burn the resulting MP3 files with your disc app of choice.
+
+The CLI is available when you want to test or run the converter directly:
 
 ```sh
 ./convert_audio_to_mp3.py sample
@@ -65,13 +73,7 @@ Preview work without converting:
 ./convert_audio_to_mp3.py --dry-run sample
 ```
 
-Replace existing MP3 outputs during repeated tests:
-
-```sh
-./convert_audio_to_mp3.py --overwrite sample
-```
-
-Production mode moves the original audio to Trash after a successful conversion:
+The default app behavior is to replace the originals by moving them to Trash after successful conversion. If you are using the CLI directly, the same behavior is available with:
 
 ```sh
 ./convert_audio_to_mp3.py --trash-originals --preset music /path/to/folder
@@ -81,6 +83,12 @@ Use the audiobook preset for spoken-word material:
 
 ```sh
 ./convert_audio_to_mp3.py --trash-originals --preset audiobook /path/to/folder
+```
+
+Replace existing MP3 outputs during repeated tests:
+
+```sh
+./convert_audio_to_mp3.py --overwrite sample
 ```
 
 ## Development
