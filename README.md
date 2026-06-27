@@ -18,6 +18,12 @@ What they need is simple. They create a folder for a CD, put nested folders insi
 
 The app is intentionally small and local-first. It uses `ffmpeg` for conversion and does not require a subscription or cloud service.
 
+## Who This Is For
+
+This project is for people who care about owning their own music, want their kids to enjoy music in a way that can reduce screen time, and like simple local tools more than subscriptions.
+
+It also helps if you are a little technical, or at least comfortable asking your own AI assistant detailed questions about installation, permissions, and whether anything in the setup raises security concerns.
+
 ## Install
 
 Install `ffmpeg` first:
