@@ -1,8 +1,8 @@
 # MP3 Convert Droplet
 
-I built this because I missed the old feeling of making MP3 CDs. As a teenager, I could fit a few favorite albums onto one disc, and I carried them around with a Sony Discman and a cassette adapter in the car. My sons now use the same style of setup, and when I looked for software to help them build MP3 CDs, the options were surprisingly poor: subscription apps, Apple Music workarounds, and tools that were not very pleasant to use.
+I built this because I missed the old feeling of making MP3 CDs. As a teenager, I loved fitting a handful of favorite albums onto one disc. My sons now use the same style of setup, and when I looked for software to help them make MP3 CDs in 2026, the options were surprisingly poor: subscription apps, Apple Music workarounds, and tools that were not very pleasant to use.
 
-What they need is simple. They create a folder for a CD, put nested folders inside it as playlists or album groupings, then drag the whole thing onto this app. It asks whether the batch is Music or Audiobook, converts the supported audio files to MP3, and leaves them ready for Roxio Toast or whatever they use to burn the disc.
+What they need is simple. They create a folder for a CD, put nested folders inside it as playlists or album groupings, then drag the whole thing onto this app. It asks whether the batch is Music or Audiobook, converts the supported audio files to MP3, and leaves them ready for Roxio Toast or whatever they use to burn the disc. This project was built in a few hours over a weekend with help from AI coding agents.
 
 ![MP3 Convert Droplet demo](assets/audio%20to%20mp3.gif)
 
