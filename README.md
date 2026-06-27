@@ -1,8 +1,24 @@
-# MP3 Convert
+# MP3 Convert Droplet
 
-Recursive drag-and-drop audio conversion for macOS, backed by `ffmpeg`.
+I built this because I missed the old feeling of making MP3 CDs. As a teenager, I could fit a few favorite albums onto one disc, and I carried them around with a Sony Discman and a cassette adapter in the car. My sons now use the same style of setup, and when I looked for software to help them build MP3 CDs, the options were surprisingly poor: subscription apps, Apple Music workarounds, and tools that were not very pleasant to use.
 
-## Install on a Mac
+What they need is simple. They create a folder for a CD, put nested folders inside it as playlists or album groupings, then drag the whole thing onto this app. It asks whether the batch is Music or Audiobook, converts the supported audio files to MP3, and leaves them ready for Roxio Toast or whatever they use to burn the disc.
+
+![MP3 Convert Droplet demo](assets/audio%20to%20mp3.gif)
+
+## What It Does
+
+`MP3 Convert Droplet` is a local macOS drag-and-drop app for recursively converting nested audio folders into MP3 files.
+
+- Drag a folder onto the app icon.
+- Pick `Music` for higher quality or `Audiobook` for smaller files.
+- Existing `.mp3` files are skipped.
+- Originals are moved to Trash after successful conversion.
+- Use a separate burning app to make the CD afterward.
+
+The app is intentionally small and local-first. It uses `ffmpeg` for conversion and does not require a subscription or cloud service.
+
+## Install
 
 Install `ffmpeg` first:
 
@@ -10,23 +26,20 @@ Install `ffmpeg` first:
 brew install ffmpeg
 ```
 
-Then install the local command and Dock droplet:
+Clone the repo and install the local command and Dock droplet:
 
 ```sh
+git clone git@github.com:jfbloom22/mp3-convert-droplet.git
+cd mp3-convert-droplet
 ./install_droplet.sh
 ```
 
-This creates:
+That creates:
 
 - `~/.local/bin/mp3-convert`
 - `~/Applications/Convert Audio to MP3.app`
 
-Drag `~/Applications/Convert Audio to MP3.app` to the Dock. Drop audio files or folders onto it to convert recursively. In droplet mode, originals are moved to the macOS Trash after successful conversion.
-
-Each drop prompts for a conversion preset:
-
-- `Music`: highest quality MP3 using LAME VBR `-q:a 0`
-- `Audiobook`: smaller MP3 using `128k`, while preserving stereo for voice acting and sound effects
+Drag `~/Applications/Convert Audio to MP3.app` to the Dock. Dropping files or folders onto it will recurse through the tree and convert the supported audio files in place.
 
 To uninstall:
 
@@ -34,7 +47,11 @@ To uninstall:
 ./uninstall_droplet.sh
 ```
 
-## Local Test Mode
+## Why This Exists
+
+This follows the same droplet idea as [Loomify](https://github.com/jfbloom22/Loomify): put files on an app icon and let the app do the boring part. That model feels better than hunting through menus or signing up for another service.
+
+## Usage
 
 By default, the script writes `.mp3` files beside the originals and leaves the source files in place:
 
@@ -54,45 +71,39 @@ Replace existing MP3 outputs during repeated tests:
 ./convert_audio_to_mp3.py --overwrite sample
 ```
 
-## Production Mode
-
-After a successful conversion, move the original non-MP3 audio file to the macOS Trash:
+Production mode moves the original audio to Trash after a successful conversion:
 
 ```sh
 ./convert_audio_to_mp3.py --trash-originals --preset music /path/to/folder
 ```
 
-Use the audiobook preset for spoken-word material where smaller files are preferred:
+Use the audiobook preset for spoken-word material:
 
 ```sh
 ./convert_audio_to_mp3.py --trash-originals --preset audiobook /path/to/folder
 ```
 
-Use `--overwrite` too if existing `.mp3` files should be replaced:
+## Development
+
+Run the tests:
 
 ```sh
-./convert_audio_to_mp3.py --trash-originals --overwrite --preset music /path/to/folder
+python3 -m unittest discover -s tests
 ```
 
-## Drag-and-Drop Dock App
-
-The installer builds the droplet locally on each Mac with `osacompile`, so there is no downloaded unsigned app bundle to distribute. The app prompts for Music or Audiobook, then calls `~/.local/bin/mp3-convert --trash-originals --preset ...` for dropped files and folders.
-
-Automator runs with a minimal shell environment, so it may not inherit Homebrew's `PATH`. The converter handles this by checking common ffmpeg locations like `/opt/homebrew/bin/ffmpeg` and `/usr/local/bin/ffmpeg`.
-
-Originals are moved to Trash with macOS Foundation's `FileManager.trashItem` API after successful conversion. The converter does not ask Finder to delete files, which avoids macOS Automation permission prompts.
-
-## App Icon
-
-The app icon source is `scripts/render_app_icon.py`. To rebuild the macOS `.icns` file:
+Rebuild the icon:
 
 ```sh
 ./build_icon.sh
 ```
 
-`install_droplet.sh` applies `assets/app-icon.icns` to the generated droplet.
+Reinstall the local app bundle:
 
-## Conversion Defaults
+```sh
+./install_droplet.sh
+```
+
+## Implementation Notes
 
 - Inputs: `.aac`, `.aif`, `.aiff`, `.alac`, `.flac`, `.m4a`, `.m4b`, `.ogg`, `.opus`, `.wav`, `.wma`
 - Skips existing `.mp3` outputs unless `--overwrite` is passed.
